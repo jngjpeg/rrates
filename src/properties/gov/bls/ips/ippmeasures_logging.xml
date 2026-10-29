@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration monitorInterval="60">
+  <Appenders>
+    <Console name="console" target="SYSTEM_OUT">
+      <PatternLayout pattern="[%-5level] %d{yyyy/MM/dd-HH:mm:ss.SSS} - %p - [%t] - %c - %m%n"/>
+    </Console>	
+	<RollingFile name="sharedpackageappender" fileName="logs/shared_packages.log" filePattern="logs/shared_packages.log.%i">
+		<PatternLayout>
+			<pattern>[%-5level] %d{yyyy/MM/dd-HH:mm:ss.SSS} - %p - [%t] - %c - %m%n</pattern>
+		</PatternLayout>
+		<Policies>
+			<SizeBasedTriggeringPolicy size="50 MB" /> 
+		</Policies>
+		<DefaultRolloverStrategy max="5" />
+   </RollingFile>
+   <RollingFile name="ssoappender" fileName="logs/ips_sso.log" filePattern="logs/ips_sso.log.%i">
+		<PatternLayout>
+			<pattern>[%-5level] %d{yyyy/MM/dd-HH:mm:ss.SSS} - %p - [%t] - %c - %m%n</pattern>
+		</PatternLayout>
+		<Policies>
+			<SizeBasedTriggeringPolicy size="50 MB" />
+		</Policies>			
+		<DefaultRolloverStrategy max="5" />
+	</RollingFile>	
+	<RollingFile name="responseRatesappender" fileName="logs/ipp_responseRates.log" filePattern="logs/ipp_responseRates.log.%i">
+		<PatternLayout>
+			<pattern>[%-5level] %d{yyyy/MM/dd-HH:mm:ss.SSS} - %p - [%t] - %c - %m%n</pattern>
+		</PatternLayout>
+		<Policies>
+			<SizeBasedTriggeringPolicy size="50 MB" />
+		</Policies>			
+		<DefaultRolloverStrategy max="5" />
+	</RollingFile>
+		
+  </Appenders>
+  <Loggers>
+  	<Logger name="gov.bls.ips.shared" level="debug" additivity="false">
+      <AppenderRef ref="sharedpackageappender"/>
+    </Logger>
+    <Logger name="gov.bls.ips.shared.components.sso" level="debug" additivity="false">
+      <AppenderRef ref="ssoappender"/>
+    </Logger>
+	<Logger name="gov.bls.ips.shared.sso" level="debug" additivity="false">
+      <AppenderRef ref="ssoappender"/>
+    </Logger>
+	<Logger name="gov.bls.platform" level="all" additivity="false">
+		<AppenderRef ref="responseRatesappender" level="all" />
+	</Logger>	
+    <Root level="error">
+      <AppenderRef ref="console"/>
+    </Root>
+  </Loggers>
+</Configuration>

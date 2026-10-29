@@ -1,0 +1,15 @@
+set src=C:\Dev\SVN\DIPS-IPP\trunk\R-RATES
+set WL_HOME=C:\DevTools\Weblogic\12.2.1.4\wlserver
+@rem set ant_home=C:\ApacheAnt\apache-ant-1.8.2
+@rem set ant_home=C:\Users\DANG_C\Desktop\wls1212_dev\wls12120\oracle_common\modules\org.apache.ant_1.8.4
+set ant_home=C:\Dev\Tools\Ant1.9.4
+set JAVA_HOME=C:\DevTools\JDK8\JDK8_241
+
+set path=%JAVA_HOME%\bin;%ant_home%\bin;%path%
+
+set classpath=.;%ant_home%\lib\ant.jar;%WL_HOME%\server\lib\weblogic.jar;%classpath%
+
+
+call ant
+
+pause

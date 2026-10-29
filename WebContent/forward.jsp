@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript">
+	window.location.href = '/IPPMeasures/gui.html';
+</script>
+</head>
+<body>
+
+</body>
+</html>

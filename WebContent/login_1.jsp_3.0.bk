@@ -1,0 +1,22 @@
+<html>
+<head>
+<title>Temporary Log In</title>
+<script>
+
+function submitForm(){
+   document.getElementById("lanName").value = document.getElementById("Login").value;
+   loginForm.submit();
+}
+
+</script>
+<body>
+Login Name : <input  type="text" id="Login" value="" size="20">
+<button onclick="submitForm();">Submit</button>
+<form id="loginForm"  method="POST" action="/IPPMeasures/UserServlet">
+<input  type="hidden" id="lanName" name="lanName" value="" size="20">
+<input type="hidden" name="FromNonSsoPage" value="true">
+</form>
+</body>
+</html>
+
+

@@ -1,0 +1,220 @@
+<project name="IPPMeasures WAR file" default="war" basedir=".">
+<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+<property environment="env" />
+<!-- 1) set global properties for this build -->
+  <property name="src" location="${env.src}/src"/>
+  <property name="build" location="${env.src}/deploy"/> 
+  <property name="WEBROOT" location="${env.src}/WebContent"/> 
+  <property name="dist_lib_needed" location="${WEBROOT}/WEB-INF/lib"/> 
+  <property name="ext_lib" location="${env.ext_lib}"/>
+  <property name="ips_shared_src" location="${env.ips_shared_src}"/>
+  <property name="otspsso_src" location="${env.otspsso_src}"/>
+  <property name="build_to_environment" value="${env.build.to.environment}"/>
+  <property name="buildVersion" value="${env.buildVersion}"/>
+  
+<target name="compile_war" depends="copy_ips_shared_source,copy_otspsso_source">
+<delete dir="${build}/war" failonerror="false"/>
+<delete dir="${build}/classes" failonerror="false"/>
+<delete dir="${build}/ssoclasses" failonerror="false"/>
+<mkdir dir="${build}/war" />
+<mkdir dir="${build}/classes" />
+<mkdir dir="${build}/ssoclasses" />
+
+  <path id="IPPMeasures.classpath">
+    <pathelement location="${env.weblogic_home}/server/lib/weblogic.jar" />   
+	<pathelement location="${dist_lib_needed}/antlr-2.7.2.jar" />
+    <pathelement location="${dist_lib_needed}/commons-beanutils-1.8.0.jar" />
+    <pathelement location="${dist_lib_needed}/commons-chain-1.2.jar" />
+    <pathelement location="${dist_lib_needed}/commons-digester-1.8.jar" />
+    <pathelement location="${dist_lib_needed}/commons-validator-1.3.1.jar" />
+    <pathelement location="${dist_lib_needed}/dom4j-1.6.1.jar" />
+	<pathelement location="${dist_lib_needed}/json.jar" />
+	<pathelement location="${dist_lib_needed}/json-rpc-1.0.jar" />
+    <pathelement location="${dist_lib_needed}/ojdbc5.jar" />
+	<pathelement location="${dist_lib_needed}/oro-2.0.8.jar" />
+	<pathelement location="${dist_lib_needed}/poi-3.7-20101029.jar" />
+	<pathelement location="${dist_lib_needed}/poi-ooxml-3.7-20101029.jar" />
+	<pathelement location="${dist_lib_needed}/poi-ooxml-schemas-3.7-20101029.jar" />
+	<pathelement location="${dist_lib_needed}/struts-core-1.3.10.jar" />
+	<pathelement location="${dist_lib_needed}/struts-taglib-1.3.10.jar" />
+	<pathelement location="${dist_lib_needed}/struts-tiles-1.3.10.jar" />
+  </path>
+  <path id="ext_lib.classpath">
+	<fileset dir="${ext_lib}">
+		<include name="**/*.jar" />
+		
+		
+	</fileset>
+  </path>
+
+
+<javac srcdir="${src}" destdir = "${build}/classes" includeantruntime="true"
+  includes =" 	     
+  	     gov/bls/responseRates/controller/*.java,
+  	     gov/bls/responseRates/dao/*.java,
+  	     gov/bls/responseRates/filters/*.java,
+  	     gov/bls/responseRates/service/dbAccess/*.java,
+  	     gov/bls/responseRates/utility/export/*.java,
+		 gov/bls/responseRates/utility/help/*.java,
+		 gov/bls/responseRates/utility/user/*.java,
+		 gov/bls/responseRates/properties/*.java,
+		 gov/bls/platform/log/*.java"
+		 encoding="cp1252">
+  	     <classpath refid="IPPMeasures.classpath"/>
+		 <classpath refid="ext_lib.classpath"/>
+  	     
+  </javac>
+  
+  <!-- added following code to replace date in gui.html by Charlotte on 12.13.2019 -->
+        <tstamp>
+	    <format property='DATETIME' pattern='MM/dd/yyyy HH:mm:ss z'/>
+        </tstamp>
+        <replace file="${WEBROOT}/gui.html">
+			<replacefilter token="@Build_DateTime@" value="${DATETIME}"/>
+		</replace>
+        <replace file="${WEBROOT}/gui.html">
+		<replacefilter token="@Build_Version@" value="${buildVersion}"/>
+		</replace>
+        <replace file="${WEBROOT}/gui.html">
+		<replacefilter token="@Build_Environment@" value="${build_to_environment}"/>
+		</replace>	
+		<replace file="${WEBROOT}/gui.html">
+			<replacefilter token="@Weblogic_Version@" value="${env.weblogicVersion}"/>
+		</replace>
+		<replace file="${WEBROOT}/gui.html">
+			<replacefilter token="@JDK_Version@" value="${env.jdkVersion}"/>
+		</replace>
+</target>
+<target name="build_sso_client_jar">
+	<javac srcdir="${src}" destdir = "${build}/ssoclasses" includeantruntime="true"
+	includes =" 	     
+  	     gov/bls/ips/shared/sso/api/**/*.java,
+  	     gov/bls/ips/shared/sso/components/**/*.java,
+  	     gov/bls/ips/shared/components/util/**/*.java,
+  	     gov/bls/ips/shared/dbcon/**/*.java,
+  	     gov/bls/ips/shared/framework/**/*.java,
+		 gov/bls/ips/shared/json/**/*.java,
+		 gov/bls/ips/shared/logger/**/*.java,
+		 gov/bls/ips/shared/components/sso/**/*.java"
+		 encoding="cp1252">
+  	     <classpath refid="IPPMeasures.classpath"/>
+		 <classpath refid="ext_lib.classpath"/>	
+	</javac>
+	
+	<jar jarfile="${WEBROOT}/WEB-INF/lib/ipp-rrates-ssoclient.jar" basedir="${build}/ssoclasses" />
+
+</target>
+<!-- Copy required IPS,SSO shared code from check out directory to gov folder. -->
+<target name="copy_ips_shared_source">
+   <!-- IPS Shared -->
+   <copy todir="${src}/gov/bls/ips/shared/components/util" overwrite="true">
+		<fileset dir="${ips_shared_src}/JavaSource/gov/bls/ips/shared/components/util"/>	 		
+   </copy>
+   <copy todir="${src}/gov/bls/ips/shared/framework" overwrite="true">
+		<fileset dir="${ips_shared_src}/JavaSource/gov/bls/ips/shared/framework"/>	 		
+   </copy>
+   <copy todir="${src}/gov/bls/ips/shared/dbcon" overwrite="true">
+		<fileset dir="${ips_shared_src}/JavaSource/gov/bls/ips/shared/dbcon"/>
+   </copy>
+   <copy todir="${src}/gov/bls/ips/shared/json" overwrite="true">
+		<fileset dir="${ips_shared_src}/JavaSource/gov/bls/ips/shared/json"/>	 		
+   </copy>
+   <copy todir="${src}/gov/bls/ips/shared/logger" overwrite="true">
+		<fileset dir="${ips_shared_src}/JavaSource/gov/bls/ips/shared/logger"/>	 		
+   </copy>
+</target>
+<target name="copy_otspsso_source">
+   <!-- OTSP-SSO Shared -->
+   <copy todir="${src}/gov/bls/ips/shared/components/sso" overwrite="true">
+		<fileset dir="${otspsso_src}/SSOClient/JavaSource/Web/gov/bls/ips/shared/components/sso"/>
+   </copy>
+   <copy todir="${src}/gov/bls/ips/shared/sso/components" overwrite="true">
+		<fileset dir="${otspsso_src}/SSOClient/JavaSource/EJB/gov/bls/ips/shared/sso/components"/>
+   </copy>
+   <copy todir="${src}/gov/bls/ips/shared/sso/api" overwrite="true">
+		<fileset dir="${otspsso_src}/SSOClient/JavaSource/EJBClient/gov/bls/ips/shared/sso/api"/>
+   </copy>
+</target>
+<target name="copy_sso_properties_file">	
+	<echo>copy_sso_properties_file: build_to_environment: ${build_to_environment}</echo>
+	<copy todir="${build}/war/properties/gov/bls/ips/shared/sso" overwrite="true">
+		<fileset dir="${src}/properties/gov/bls/ips/shared/sso"/>
+	</copy>
+	<if>
+		<available file="${build}/war/properties/gov/bls/ips/shared/sso/api/util/sso_info.properties"/>
+	<then>
+	   <delete file="${build}/war/properties/gov/bls/ips/shared/sso/api/util/sso_info.properties" verbose="true"/>
+	</then>
+	</if>
+	<if>
+		<available file="${build}/war/properties/gov/bls/ips/shared/sso/api/util/${build_to_environment}_sso_info.properties"/>
+		<then>
+			<copy file="${build}/war/properties/gov/bls/ips/shared/sso/api/util/${build_to_environment}_sso_info.properties" 
+			tofile="${build}/war/properties/gov/bls/ips/shared/sso/api/util/temp.bak" overwrite="true" verbose="true"/>
+			<delete>
+			  <fileset dir="${build}/war/properties/gov/bls/ips/shared/sso/api/util/" includes="*.properties"/>
+			</delete>
+			<copy file="${build}/war/properties/gov/bls/ips/shared/sso/api/util/temp.bak" 
+			tofile="${build}/war/properties/gov/bls/ips/shared/sso/api/util/sso_info.properties" overwrite="true" verbose="true"/>
+			
+			<delete file="${build}/war/properties/gov/bls/ips/shared/sso/api/util/temp.bak" verbose="true"/>
+		</then>
+	</if>
+</target>
+<target name="copy_properties_file" depends="copy_sso_properties_file">
+	<echo> build_to_environment is ${build_to_environment}</echo> 
+	<if>
+		<available file="${src}/properties/gov/bls/ipp/responseRates/responserates.properties"/>
+	<then>
+		<delete file="${src}/properties/gov/bls/ipp/responseRates/responserates.properties " verbose="true"/>
+	</then>	
+	</if>	
+	<if>
+		<available file="${src}/properties/gov/bls/ipp/responseRates/responserates${build_to_environment}.properties"/>
+		<then>
+		  <copy file="${src}/properties/gov/bls/ipp/responseRates/responserates${build_to_environment}.properties" 
+		  tofile="${src}/properties/gov/bls/ipp/responseRates/responserates.properties" overwrite="true" verbose="true"/>
+		  <copy file="${src}/properties/gov/bls/ipp/responseRates/responserates.properties"
+				tofile="${build}/war/properties/gov/bls/ipp/responseRates/responserates.properties" overwrite="true" verbose="true"/>
+		</then>
+		<else>
+			<echo> The responserates${build_to_environment}.properties file cannot be found!!!</echo>
+		</else>
+	</if>
+	<!-- Copy log4j files -->
+	<copy file="${src}/properties/log4j2.xml"
+			tofile="${build}/war/properties/log4j2.xml" overwrite="true" verbose="true"/>
+	<copy file="${src}/properties/gov/bls/ips/IPSConfig_en.properties"
+			tofile="${build}/war/properties/gov/bls/ips/IPSConfig_en.properties" overwrite="true" verbose="true"/>		
+	<copy file="${src}/properties/gov/bls/ips/ippmeasures_logging.xml"
+			tofile="${build}/war/properties/gov/bls/ips/ippmeasures_logging.xml" overwrite="true" verbose="true"/>
+</target>
+<target name="war" depends="compile_war,copy_properties_file,build_sso_client_jar,delete_unused_folders_from_buildarea">
+<war warfile="${build}/war/IPPMeasures.war"
+	webxml="${WEBROOT}/WEB-INF/web.xml">	
+	
+	<webinf dir="${WEBROOT}/WEB-INF" includes="**" />
+	<fileset dir="${WEBROOT}" includes="**" >
+	<exclude name="WEB-INF/web.xml" />
+	</fileset>
+	<classes dir="${build}/classes" />
+	<zipfileset dir="${WEBROOT}/" includes="**" prefix="" />
+	<zipfileset dir="${WEBROOT}/css" includes="**" prefix="css" />
+	<zipfileset dir="${WEBROOT}/images" includes="**" prefix="images" />
+	<zipfileset dir="${WEBROOT}/js" includes="**" prefix="js" />		 
+</war>
+
+<!--delete dir="${build}/war/gov" / -->
+	
+</target>
+<!-- Delete unused files and folders from build area -->
+<target name="delete_unused_folders_from_buildarea">
+	 <delete dir="${env.src}/CM Documents" failonerror="false"/>	 
+	 <delete dir="${env.src}/Stored Proc" failonerror="false"/>
+	 <delete dir="${env.src}/deploy_to_be_deleted" failonerror="false"/>
+	 <delete dir="${env.src}/.git" failonerror="false"/>
+	 <delete file="${env.src}/.gitattributes" failonerror="false"/>
+	 <delete file="${env.src}/.gitignore" failonerror="false"/>
+	 <delete file="${env.src}/readme.md" failonerror="false"/>
+</target>
+</project>

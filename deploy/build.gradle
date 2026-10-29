@@ -1,0 +1,61 @@
+
+plugins {
+    id 'java'
+    id 'war'
+}
+
+group = 'gov.bls'
+version = '1.0.0'
+
+
+
+repositories {
+    mavenCentral()
+}
+
+//1. setting global properties 
+
+//.getenv -- access env variables gradle
+def env = System.getenv('src')
+println System.getenv('src')
+
+def src = file("${env.src}/src")
+def build = file("${env.src}/deploy")
+def WEBROOT = file("${env.src}/WebContent")
+def dist_lib_needed = file("${WEBROOT}/WEB-INF/lib")
+def ext_lib = file("env.ext.lib") 
+def ips_shared_src = file("env.ips_shared_src")
+def otspsso_src = file("env.otspsso_src")
+def build_to_environment = env.build_to_environment
+def buildVersion = env.buildVersion
+
+
+//2. compile war 
+
+
+
+//3. calls libraries needed  <path id="IPPMeasures.classpath">
+dependencies {
+    // Existing application JARs.
+    implementation fileTree(
+        dir: 'WebContent/WEB_INF/lib', 
+        include: ['*.jar']
+    )
+}
+
+
+
+//looks for war task from plugin before other tasks 
+tasks.named('war') {
+    archiveBaseName = 'IPPMeasures'
+    archiveVersion = ''
+    destinationDirectory = layout.buildDirectory.dir('deploy') 
+    //ippmeasures.war inside deploy/war
+
+    // treat webcontent as web application root. 
+    webAppDirectory = file('WebContent')
+
+    //ignore items in same path (duplicate logs)
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE 
+}
+
